@@ -5,19 +5,21 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class ResultWriter {
-    private final String outputFile;
+public class ResultWriter implements AutoCloseable {
+    private final PrintWriter writer;
 
-    public ResultWriter(String outputFile) {
-        this.outputFile = outputFile;
+    public ResultWriter(String outputFile) throws IOException {
+        // Clear the file on start
+        new FileWriter(outputFile, false).close();
+        this.writer = new PrintWriter(new BufferedWriter(new FileWriter(outputFile, true)));
     }
 
     public synchronized void writeResult(String result) {
-        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outputFile, true)))) {
-            out.println(result);
-        } catch (IOException e) {
-            System.err.println("Error writing result: " + e.getMessage());
-            e.printStackTrace();
-        }
+        writer.println(result);
+    }
+
+    @Override
+    public void close() throws IOException {
+        writer.close();
     }
 }

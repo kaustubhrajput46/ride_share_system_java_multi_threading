@@ -1,6 +1,11 @@
 package org.example;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Worker implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(Worker.class);
+
     private final int workerId;
     private final TaskQueue taskQueue;
     private final ResultWriter resultWriter;
@@ -13,7 +18,7 @@ public class Worker implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Worker " + workerId + " started.");
+        logger.info("Worker {} started.", workerId);
 
         while (true) {
             try {
@@ -26,17 +31,18 @@ public class Worker implements Runnable {
                 String result = "Worker " + workerId + " processed Task " + task.getTaskId() + " with data: " + task.getData();
                 resultWriter.writeResult(result);
 
-                System.out.println("Worker " + workerId + " completed Task " + task.getTaskId());
+                logger.info("Worker {} completed Task {}", workerId, task.getTaskId());
 
             } catch (InterruptedException e) {
-                System.err.println("Worker " + workerId + " was interrupted.");
+                logger.warn("Worker {} was interrupted.", workerId);
+                // Restore the interrupted status
+                Thread.currentThread().interrupt();
                 break;
             } catch (Exception e) {
-                System.err.println("Worker " + workerId + " encountered error: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("Worker {} encountered an error", workerId, e);
             }
         }
 
-        System.out.println("Worker " + workerId + " stopped.");
+        logger.info("Worker {} stopped.", workerId);
     }
 }
